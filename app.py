@@ -7,14 +7,17 @@ if 'tasks' not in st.session_state:
 
 # Function to add a new task
 def add_task():
-    task_name = st.text_input("Enter a new task", key="new_task_input")
-    if st.button("Add Task"):
-        if task_name:
-            st.session_state['tasks'].append(task_name)  # Add the task to the list
-            st.session_state['completed'].append(False)  # Set completion status to False
-            st.success(f"Task '{task_name}' added.")
-        else:
-            st.error("Please enter a task.")
+    with st.form(key='task_form', clear_on_submit=True):
+        task_name = st.text_input("Enter a new task", key="new_task_input")
+        submit_button = st.form_submit_button("Add Task")
+        
+        if submit_button:
+            if task_name:
+                st.session_state['tasks'].append(task_name)  # Add the task to the list
+                st.session_state['completed'].append(False)  # Set completion status to False
+                st.success(f"Task '{task_name}' added.")
+            else:
+                st.error("Please enter a task.")
 
 # Function to remove a task
 def remove_task():
