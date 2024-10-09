@@ -1,2 +1,2 @@
-# Taskify- a to do list manager
+# Taskify- to do list manager
 
