@@ -1,66 +1,52 @@
 import streamlit as st
-import sqlite3
 
-# Database functions
-def create_connection():
-    conn = sqlite3.connect('todo_list.db')
-    return conn
+# Initialize the session state to store tasks and completion status
+if 'tasks' not in st.session_state:
+    st.session_state['tasks'] = []  # List to store task names
+    st.session_state['completed'] = []  # List to store completion status (True/False)
 
-def add_task_to_db(task_name):
-    conn = create_connection()
-    cursor = conn.cursor()
-    cursor.execute('INSERT INTO tasks (name) VALUES (?)', (task_name,))
-    conn.commit()
-    conn.close()
+# Function to add a new task
+def add_task():
+    task_name = st.text_input("Enter a new task", key="new_task_input")
+    if st.button("Add Task"):
+        if task_name:
+            st.session_state['tasks'].append(task_name)  # Add the task to the list
+            st.session_state['completed'].append(False)  # Set completion status to False
+            st.success(f"Task '{task_name}' added.")
+        else:
+            st.error("Please enter a task.")
 
-def remove_task_from_db(task_id):
-    conn = create_connection()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM tasks WHERE id = ?', (task_id,))
-    conn.commit()
-    conn.close()
+# Function to remove a task
+def remove_task():
+    task_to_remove = st.selectbox("Select a task to remove", st.session_state['tasks'], key="remove_task_select")
+    if st.button("Remove Task"):
+        if task_to_remove:
+            index = st.session_state['tasks'].index(task_to_remove)  # Get the index of the task
+            del st.session_state['tasks'][index]  # Remove the task
+            del st.session_state['completed'][index]  # Remove the corresponding completion status
+            st.success(f"Task '{task_to_remove}' removed.")
 
-def get_tasks_from_db():
-    conn = create_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM tasks')
-    tasks = cursor.fetchall()
-    conn.close()
-    return tasks
+# Display the to-do list with checkboxes to mark tasks as completed
+def display_tasks():
+    st.header("To-Do List")
+    for index, task in enumerate(st.session_state['tasks']):
+        completed = st.checkbox(task, value=st.session_state['completed'][index], key=f"task_{index}")
+        st.session_state['completed'][index] = completed  # Update the task's completion status
 
 # Streamlit App UI
 st.title("To-Do List Manager")
 
 # Section for adding tasks
 st.subheader("Add a Task")
-with st.form(key='task_form', clear_on_submit=True):
-    task_name = st.text_input("Enter a new task", key="new_task_input")
-    submit_button = st.form_submit_button("Add Task")
-    
-    if submit_button:
-        if task_name:
-            add_task_to_db(task_name)
-            st.success(f"Task '{task_name}' added.")
-        else:
-            st.error("Please enter a task.")
+add_task()
 
 # Section for removing tasks
 st.subheader("Remove a Task")
-tasks = get_tasks_from_db()
-if tasks:
-    task_names = [f"{task[0]}: {task[1]}" for task in tasks]  # Display task ID and name
-    task_to_remove = st.selectbox("Select a task to remove", task_names, key="remove_task_select")
-    
-    if st.button("Remove Task"):
-        task_id = int(task_to_remove.split(":")[0])  # Extract ID from selected task
-        remove_task_from_db(task_id)
-        st.success(f"Task '{task_to_remove}' removed.")
+if st.session_state['tasks']:  # Only show remove option if there are tasks
+    remove_task()
 
 # Section for displaying tasks
-if tasks:
-    st.header("To-Do List")
-    for task in tasks:
-        completed = st.checkbox(task[1], value=bool(task[2]), key=f"task_{task[0]}")
-        # Update completion status in the database if checked/unchecked (optional)
+if st.session_state['tasks']:
+    display_tasks()
 else:
     st.write("No tasks yet.")
