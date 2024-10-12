@@ -1,12 +1,12 @@
 import streamlit as st
 
-# Task class to represent individual tasks
+
 class Task:
     def __init__(self, name):
         self.name = name
         self.completed = False
 
-# TaskManager class to manage a collection of tasks
+# To manage a collection of tasks
 class TaskManager:
     def __init__(self):
         self.tasks = []
@@ -21,7 +21,6 @@ class TaskManager:
     def get_tasks(self):
         return self.tasks
 
-# Initialize TaskManager instance
 if 'task_manager' not in st.session_state:
     st.session_state['task_manager'] = TaskManager()
 
